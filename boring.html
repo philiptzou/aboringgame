@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Boring</title>
+        <style>
+            #gridContainer {
+                font-size: 0;
+            }
+            .grid0, .grid0 span {
+                width: 256px;
+                height: 256px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+                word-spacing: -6px;
+                line-height: 0;
+            }
+            .grid1, .grid1 span {
+                width: 128px;
+                height: 128px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid2, .grid2 span {
+                width: 64px;
+                height: 64px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid3, .grid3 span {
+                width: 32px;
+                height: 32px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid4, .grid4 span {
+                width: 16px;
+                height: 16px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid5, .grid5 span {
+                width: 8px;
+                height: 8px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid6, .grid6 span {
+                width: 4px;
+                height: 4px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid7, .grid7 span {
+                width: 2px;
+                height: 2px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            .grid8, .grid8 span {
+                width: 1px;
+                height: 1px;
+                margin: 0;
+                padding: 0;
+                display: inline-block;
+            }
+            #gridContainer span > div:nth-child(1) > span {
+                border-radius: 100% 0 0 0;
+            }
+            #gridContainer span > div:nth-child(2) > span {
+                border-radius: 0 100% 0 0;
+            }
+            #gridContainer span > div:nth-child(3) > span {
+                border-radius: 0 0 0 100%;
+            }
+            #gridContainer span > div:nth-child(4) > span {
+                border-radius: 0 0 100% 0;
+            }
+            /*#gridContainer div:hover > div:nth-child(1) {
+                animation: tocircle 0.5s forwards;
+            }*/
+        </style>
+    </head>
+    <body>
+        <div id="gridContainer"></div>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+        <script>
+            $( function() {
+                var maxGridLevel = 6,
+                    colors = [
+                    '#56ffb3',
+                    '#ff7ead',
+                    '#59bdde',
+                    '#fdfd87',
+                    '#fdad87',
+                    '#bea4d9',
+                    '#9ce3eb',
+                    '#d6fc8a',
+                    '#ccff00',
+                    '#ff6600',
+                    '#c0addb',
+                    '#54d8a4'
+                    ],
+                    $container = $( '#gridContainer' ),
+                    $document = $( document ),
+                    grid0Count = Math.floor( $document.innerWidth() / 256 ) *
+                                 Math.floor( $document.innerHeight() / 256 ),
+                    mouseXPos = 0,
+                    mouseYPos = 0;
+
+                function randomChoice( arr ) {
+                    var idx = Math.floor(Math.random() * arr.length );
+                    return arr[idx];
+                }
+
+                // http://stackoverflow.com/questions/4809971/mouseover-mouseout-issue-in-safari-chrome
+                if ( $.browser.webkit ) {
+                    $document.mousemove( function( evt ) {
+                        mouseXPos = event.pageX;
+                        mouseYPos = event.pageY;
+                    } );
+                }
+
+                $container.on( 'aniready', 'span', function() {
+                    var $this = $( this ),
+                        color = $this.css( 'background-color' ),
+                        gridLevel = parseInt( $this.data( 'gridLevel' ) );
+                    if ( $this.data( 'aniReady' ) || gridLevel === maxGridLevel ) {
+                        return;
+                    }
+                    $this.data( {
+                        aniReady: true,
+                        moEnter: true
+                    } );
+                    gridLevel ++;
+                    for ( var i = 0; i < 4; i ++ ) {
+                        $( '<div><span></span></div>' )
+                            .addClass( 'grid' + gridLevel )
+                            .appendTo( $this )
+                            .find( '> span' )
+                            .data( 'gridLevel', gridLevel )
+                            .css( 'background-color', color );
+                    }
+
+                    if ( $.browser.webkit ) {
+                        $this.find( '> div' ).each( function() {
+                            var $subGrid = $( this ),
+                                divLeft = $subGrid.position().left,
+                                divTop = $subGrid.position().top,
+                                divBottom = divTop + $subGrid.height(),
+                                divRight = divLeft + $subGrid.width();
+                            if ( mouseXPos >= divLeft && mouseXPos < divRight &&
+                                 mouseYPos >= divTop && mouseYPos < divBottom ) {
+                                $subGrid.trigger( 'mouseover' );
+                            }
+                        } );
+                    }
+                } );
+
+                
+                for ( var i = 0; i < grid0Count; i ++ ) { 
+                    $container.append('<div class="grid0"><span></span></div>');
+                }
+                
+                $( '#gridContainer > div' ).each( function() {
+                    var $this = $( this ).find( '> span' ),
+                        color = randomChoice( colors );
+                    $this
+                        .data( 'gridLevel', 0 )
+                        .animate( {
+                            borderTopLeftRadius: '50%',
+                            borderTopRightRadius: '50%',
+                            borderBottomRightRadius: '50%',
+                            borderBottomLeftRadius: '50%',
+                            backgroundColor: color
+                        }, 800, function() {
+                            $this.trigger( 'aniready' );
+                        } );
+                } );
+
+                $( '#gridContainer' ).on( 'mouseover', 'div', function() {
+                    var $this = $( this ).find( '> span' );
+                    if ( !$this.data( 'moEnter' ) || $this.data( 'gridLevel' ) === maxGridLevel ) {
+                        return;
+                    }
+                    $this.data( 'moEnter', false );  // only once
+                    $this
+                        .css( {
+                            backgroundColor: 'transparent'
+                        } )
+                        .find( '> div > span' ).each( function() {
+                        var $self = $( this ),
+                            color = randomChoice( colors );
+                        $self.animate( {
+                            borderTopLeftRadius: '50%',
+                            borderTopRightRadius: '50%',
+                            borderBottomRightRadius: '50%',
+                            borderBottomLeftRadius: '50%',
+                            backgroundColor: color
+                        }, 400, function() {
+                            $self.data( 'moEnter', true );
+                            $self.trigger( 'aniready' );
+                        } );
+                    } );
+                } );
+            } );
+        </script>
+    </body>
+</html>
